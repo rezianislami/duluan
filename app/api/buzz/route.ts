@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   if (!p) return Response.json({ error: 'invalid_token' }, { status: 401 });
 
   const accepted = await buzz(p.id);
-  if (accepted) broadcast(await getSnapshot());
+  if (accepted) await broadcast(await getSnapshot());
 
   return Response.json({ accepted });
 }

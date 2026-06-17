@@ -7,6 +7,6 @@ export async function POST(request: Request) {
   if (!session) return Response.json({ error: 'unauthorized' }, { status: 401 });
 
   await disarm();
-  broadcast(await getSnapshot());
+  await broadcast(await getSnapshot());
   return Response.json({ ok: true });
 }

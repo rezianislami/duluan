@@ -1,21 +1,27 @@
 /**
- * In-memory SSE broadcast store.
- * Works for single-process (dev + single-instance prod).
- * Swap to Redis pub/sub for multi-instance deployments.
+ * Real-time broadcast via Supabase Realtime HTTP API.
+ * Works on Vercel serverless — no persistent WebSocket connection needed server-side.
+ * Clients subscribe to the 'game-state' channel; server POSTs updates via REST.
  */
 
-type Controller = ReadableStreamDefaultController<string>;
+const CHANNEL = 'game-state';
 
-export const sseClients = new Set<Controller>();
+export async function broadcast(payload: object): Promise<void> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export function broadcast(payload: object) {
-  const data = `data: ${JSON.stringify(payload)}\n\n`;
-  for (const ctrl of sseClients) {
-    try {
-      ctrl.enqueue(data);
-    } catch {
-      // Client disconnected — clean up
-      sseClients.delete(ctrl);
-    }
-  }
+  // Silently skip if Supabase is not configured (e.g. running tests locally without .env)
+  if (!url || !key) return;
+
+  await fetch(`${url}/realtime/v1/api/broadcast`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': key,
+      'Authorization': `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      messages: [{ topic: `realtime:${CHANNEL}`, event: 'update', payload }],
+    }),
+  });
 }

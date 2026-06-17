@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return Response.json({ error: result.error }, { status: 409 });
   }
 
-  broadcast(await getSnapshot());
+  await broadcast(await getSnapshot());
   return Response.json({
     playerId: result.playerId,
     playerName: result.playerName,

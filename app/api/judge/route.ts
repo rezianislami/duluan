@@ -18,6 +18,6 @@ export async function POST(request: Request) {
     await judgeWrong();
   }
 
-  broadcast(await getSnapshot());
+  await broadcast(await getSnapshot());
   return Response.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getSupabase } from '@/lib/supabase-client';
 import type { GameState, Player, BellState, SessionData } from '@/lib/types';
 
 interface UseGameStateResult {
@@ -25,24 +26,32 @@ export function useGameState(session: SessionData | null): UseGameStateResult {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const es = new EventSource('/api/events');
+    // Fetch current state immediately on mount
+    fetch('/api/game-state')
+      .then((r) => r.json())
+      .then(({ gameState: gs, players: ps }: { gameState: GameState; players: Player[] }) => {
+        setGameState(gs);
+        setPlayers(ps);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
 
-    es.onmessage = (e) => {
-      const { gameState: gs, players: ps } = JSON.parse(e.data) as {
-        gameState: GameState;
-        players: Player[];
-      };
-      setGameState(gs);
-      setPlayers(ps);
-      setIsLoading(false);
+    // Subscribe to Supabase Realtime broadcast — server pushes full snapshot on every mutation.
+    // getSupabase() called inside useEffect so createClient() never runs during SSR prerender.
+    const sb = getSupabase();
+    const channel = sb
+      .channel('game-state')
+      .on('broadcast', { event: 'update' }, ({ payload }) => {
+        const { gameState: gs, players: ps } = payload as { gameState: GameState; players: Player[] };
+        setGameState(gs);
+        setPlayers(ps);
+        setIsLoading(false);
+      })
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(channel);
     };
-
-    es.onerror = () => {
-      // EventSource auto-reconnects — just clear loading on first error
-      setIsLoading(false);
-    };
-
-    return () => es.close();
   }, []);
 
   const myPlayer = session
