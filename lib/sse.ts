@@ -21,7 +21,11 @@ export async function broadcast(payload: object): Promise<void> {
       'Authorization': `Bearer ${key}`,
     },
     body: JSON.stringify({
-      messages: [{ topic: `realtime:${CHANNEL}`, event: 'update', payload }],
+      // topic must equal the channel name exactly — NO "realtime:" prefix.
+      // Clients subscribe via supabase.channel('game-state'); the prefix is internal
+      // phoenix naming, not what the REST broadcast endpoint expects. Mismatch =
+      // broadcast silently dropped, clients never receive it (only the mount fetch works).
+      messages: [{ topic: CHANNEL, event: 'update', payload }],
     }),
   });
 }
