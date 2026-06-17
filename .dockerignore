@@ -1,0 +1,37 @@
+# Dependencies — reinstalled inside the image
+node_modules
+
+# Build output — generated during docker build
+.next
+
+# Dev secrets — never bake into image
+.env.local
+.env*.local
+*.env
+
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# Drizzle generated migrations (db:push handles schema at startup)
+drizzle
+
+# Misc
+README.md
+docker-compose.yml
+.dockerignore
