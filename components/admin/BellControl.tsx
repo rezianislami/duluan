@@ -2,6 +2,7 @@
 
 import type { GameState, Player } from '@/lib/types';
 import type { GmActions } from '@/hooks/useGmGameState';
+import { Countdown } from '@/components/Countdown';
 
 interface BellControlProps {
   gameState: GameState;
@@ -10,7 +11,7 @@ interface BellControlProps {
 }
 
 export function BellControl({ gameState, players, actions }: BellControlProps) {
-  const { armed, currentBuzzerId, currentBuzzerName, pointsPerCorrect } = gameState;
+  const { armed, currentBuzzerId, currentBuzzerName, pointsPerCorrect, buzzerExpiresAt, answerTimeLimit } = gameState;
   const hasBuzzer = !!currentBuzzerId;
   const eligibleCount = players.filter((p) => !p.eliminatedThisRound).length;
 
@@ -22,28 +23,31 @@ export function BellControl({ gameState, players, actions }: BellControlProps) {
       {hasBuzzer && (
         <div
           key={currentBuzzerId}
-          className="rounded-lg animate-fade-up"
+          className="rounded-lg animate-fade-up flex items-center justify-between"
           style={{
             padding: '16px 20px',
             background: 'var(--accent-dim)',
             border: '2px solid var(--accent)',
-            gap: 4,
-            display: 'flex',
-            flexDirection: 'column',
+            gap: 16,
           }}
         >
-          <p
-            className="font-bold tracking-widest uppercase"
-            style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', letterSpacing: '0.15em' }}
-          >
-            Duluan!
-          </p>
-          <p
-            className="font-display font-black"
-            style={{ fontSize: '1.75rem', color: 'var(--accent)', letterSpacing: '-0.01em' }}
-          >
-            {currentBuzzerName}
-          </p>
+          <div className="flex flex-col" style={{ gap: 4 }}>
+            <p
+              className="font-bold tracking-widest uppercase"
+              style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', letterSpacing: '0.15em' }}
+            >
+              Duluan!
+            </p>
+            <p
+              className="font-display font-black"
+              style={{ fontSize: '1.75rem', color: 'var(--accent)', letterSpacing: '-0.01em' }}
+            >
+              {currentBuzzerName}
+            </p>
+          </div>
+          {buzzerExpiresAt && (
+            <Countdown expiresAt={buzzerExpiresAt} total={answerTimeLimit} size={72} />
+          )}
         </div>
       )}
 

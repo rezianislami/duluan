@@ -71,6 +71,13 @@ export const gameSession = pgTable('game_session', {
   // No FK — avoids cascade issues when buzzer player is kicked mid-round
   currentBuzzerId: uuid('current_buzzer_id'),
   pointsPerCorrect: integer('points_per_correct').notNull().default(1),
+  // Answer time limit in seconds (GM-configurable: 10/15/20/30). Drives the
+  // countdown that starts when a player buzzes first.
+  answerTimeLimit: integer('answer_time_limit').notNull().default(15),
+  // Absolute wall-clock instant the current buzzer's answer window ends.
+  // Set when a buzz locks in, cleared on any round resolution. Broadcast as
+  // an absolute timestamp so every client counts down to the same instant.
+  buzzerExpiresAt: timestamp('buzzer_expires_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

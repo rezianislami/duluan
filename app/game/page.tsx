@@ -8,6 +8,7 @@ import { BellButton } from "@/components/BellButton";
 import { BellStatusLabel } from "@/components/BellStatusLabel";
 import { Leaderboard } from "@/components/Leaderboard";
 import { Confetti } from "@/components/Confetti";
+import { Countdown } from "@/components/Countdown";
 import type { SessionData } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, string> = { lobby: "Lobby", active: "Live", ended: "Selesai" };
@@ -141,7 +142,15 @@ export default function GamePage() {
             winnerName={gameState.currentBuzzerName}
           />
 
-          <BellButton state={bellState} onBuzz={handleBuzz} />
+          {gameState.currentBuzzerId && gameState.buzzerExpiresAt ? (
+            <Countdown
+              expiresAt={gameState.buzzerExpiresAt}
+              total={gameState.answerTimeLimit}
+              size={140}
+            />
+          ) : (
+            <BellButton state={bellState} onBuzz={handleBuzz} />
+          )}
 
           <p
             className="font-semibold tracking-widest uppercase text-center"

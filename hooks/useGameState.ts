@@ -18,6 +18,8 @@ const DEFAULT_GAME_STATE: GameState = {
   currentBuzzerId: null,
   currentBuzzerName: null,
   pointsPerCorrect: 1,
+  answerTimeLimit: 15,
+  buzzerExpiresAt: null,
 };
 
 export function useGameState(session: SessionData | null): UseGameStateResult {

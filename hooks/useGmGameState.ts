@@ -10,6 +10,8 @@ const DEFAULT_GAME_STATE: GameState = {
   currentBuzzerId: null,
   currentBuzzerName: null,
   pointsPerCorrect: 1,
+  answerTimeLimit: 15,
+  buzzerExpiresAt: null,
 };
 
 export interface GmActions {
@@ -25,6 +27,10 @@ export interface GmActions {
   /** Resets all scores to 0 and returns to lobby. */
   resetGame: () => Promise<void>;
   setPointsPerCorrect: (pts: number) => Promise<void>;
+  /** Sets the answer countdown duration (10/15/20/30 seconds). */
+  setAnswerTimeLimit: (seconds: number) => Promise<void>;
+  /** Auto-resolves an expired answer window as wrong. Fired by the GM countdown. */
+  timeoutBuzzer: (buzzerId: string) => Promise<void>;
   /** Deletes all players and creates a fresh session — players must re-enter their names. */
   factoryReset: () => Promise<void>;
 }
@@ -119,6 +125,14 @@ export function useGmGameState(): UseGmGameStateResult {
     await gmFetch('/api/points-per-correct', { points: pts });
   }, []);
 
+  const setAnswerTimeLimit = useCallback(async (seconds: number) => {
+    await gmFetch('/api/answer-time-limit', { seconds });
+  }, []);
+
+  const timeoutBuzzer = useCallback(async (buzzerId: string) => {
+    await gmFetch('/api/timeout', { buzzerId });
+  }, []);
+
   const factoryReset = useCallback(async () => {
     await gmFetch('/api/factory-reset');
   }, []);
@@ -138,6 +152,8 @@ export function useGmGameState(): UseGmGameStateResult {
       endGame,
       resetGame,
       setPointsPerCorrect,
+      setAnswerTimeLimit,
+      timeoutBuzzer,
       factoryReset,
     },
   };

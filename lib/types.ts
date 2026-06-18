@@ -21,6 +21,10 @@ export interface GameState {
   currentBuzzerId: string | null;
   currentBuzzerName: string | null;
   pointsPerCorrect: number;
+  /** GM-configurable answer window in seconds (10/15/20/30). */
+  answerTimeLimit: number;
+  /** ISO timestamp when the current buzzer's answer window ends, or null if no active buzzer. */
+  buzzerExpiresAt: string | null;
 }
 
 /** Stored in localStorage to identify this device */

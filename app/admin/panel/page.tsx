@@ -33,6 +33,20 @@ export default function GmPanelPage() {
 
   const { gameState, players, actions } = useGmGameState();
 
+  // GM owns the answer timer: serverless has no background jobs, and the GM panel is
+  // the one always-connected client. When the countdown reaches zero, fire the timeout
+  // (auto-wrong). The server call is conditional on buzzerId, so a late/duplicate fire
+  // after the GM already judged simply no-ops.
+  useEffect(() => {
+    const { currentBuzzerId, buzzerExpiresAt } = gameState;
+    if (!currentBuzzerId || !buzzerExpiresAt) return;
+    const ms = new Date(buzzerExpiresAt).getTime() - Date.now();
+    const id = setTimeout(() => actions.timeoutBuzzer(currentBuzzerId), Math.max(0, ms));
+    return () => clearTimeout(id);
+    // actions.timeoutBuzzer is stable (useCallback []); depend only on the active buzzer + deadline.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.currentBuzzerId, gameState.buzzerExpiresAt]);
+
   const handleLogout = async () => {
     await authClient.signOut();
     router.replace("/admin");
@@ -285,6 +299,25 @@ export default function GmPanelPage() {
               >
                 +
               </button>
+            </div>
+          </div>
+
+          {/* Answer time limit */}
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            <p className="section-label">Waktu jawab (detik)</p>
+            <div className="grid grid-cols-4" style={{ gap: 8 }}>
+              {[10, 15, 20, 30].map((s) => {
+                const active = gameState.answerTimeLimit === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => actions.setAnswerTimeLimit(s)}
+                    className={`btn btn-md ${active ? "btn-accent" : "btn-ghost"}`}
+                  >
+                    {s}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
