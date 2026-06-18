@@ -122,10 +122,13 @@ export function useGmGameState(): UseGmGameStateResult {
   }, []);
 
   const setPointsPerCorrect = useCallback(async (pts: number) => {
+    // Optimistic: reflect the GM's own change instantly; the broadcast confirms it shortly after.
+    setGameState((gs) => ({ ...gs, pointsPerCorrect: pts }));
     await gmFetch('/api/points-per-correct', { points: pts });
   }, []);
 
   const setAnswerTimeLimit = useCallback(async (seconds: number) => {
+    setGameState((gs) => ({ ...gs, answerTimeLimit: seconds }));
     await gmFetch('/api/answer-time-limit', { seconds });
   }, []);
 
